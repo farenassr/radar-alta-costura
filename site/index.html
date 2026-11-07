@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Radar gratuito de empleos, consultorías y proyectos de alta costura, con prioridad para Colombia y el trabajo remoto desde el país.">
+  <meta name="theme-color" content="#261b35">
+  <title>Radar de alta costura</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#oportunidades">Saltar a las oportunidades</a>
+  <header class="cover" id="top">
+    <div class="frame">
+      <div class="masthead">
+        <a class="wordmark" href="./" aria-label="Radar de alta costura, inicio">
+          <svg width="27" height="27" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="12" stroke="currentColor"/>
+            <circle cx="16" cy="16" r="6" stroke="currentColor"/>
+            <path d="M16 16 27 5M16 1v6M16 25v6M1 16h6m18 0h6" stroke="currentColor"/>
+            <circle cx="16" cy="16" r="2" fill="currentColor"/>
+          </svg>
+          Radar de alta costura
+        </a>
+        <nav aria-label="Secciones">
+          <a href="#oportunidades">Oportunidades</a>
+          <a href="#fuentes">Fuentes</a>
+        </nav>
+      </div>
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="hero-label"><span class="stitch" aria-hidden="true"></span> Directorio gratuito de oportunidades</p>
+          <h1>Radar de<br>alta costura</h1>
+          <p class="intro">Empleos, consultorías y proyectos en moda de alta costura. Colombia y las oportunidades remotas abiertas al país aparecen primero.</p>
+          <a class="hero-link" href="#oportunidades">Explorar oportunidades <span aria-hidden="true">↓</span></a>
+        </div>
+        <figure class="hero-figure" aria-hidden="true">
+          <img src="./patron.svg" width="470" height="385" alt="">
+          <figcaption>Detalle de patronaje <span>01</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </header>
+
+  <main class="frame" id="oportunidades" tabindex="-1">
+    <section aria-labelledby="results-title" class="directory">
+      <header class="directory-header">
+        <div>
+          <h2 id="results-title">Oportunidades</h2>
+          <p>Ordenadas por afinidad con la alta costura.</p>
+        </div>
+        <a class="health-link" id="health-link" href="#fuentes">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span><strong>Última revisión</strong><span id="review">Cargando…</span></span>
+        </a>
+      </header>
+      <p id="freshness" class="notice" role="status" hidden></p>
+      <form id="filters" class="filters" aria-label="Filtrar oportunidades">
+        <label>Tipo de oportunidad
+          <select name="type" id="type">
+            <option value="">Todos los tipos</option>
+            <option value="empleo">Empleo</option>
+            <option value="consultoria">Consultoría</option>
+            <option value="proyecto">Proyecto</option>
+          </select>
+        </label>
+        <label>Modalidad
+          <select name="modality" id="modality">
+            <option value="">Todas</option>
+            <option value="presencial">Presencial</option>
+            <option value="remoto">Remota</option>
+            <option value="hibrido">Híbrida</option>
+            <option value="sin-confirmar">Por confirmar</option>
+          </select>
+        </label>
+        <button class="text-button reset-filters" id="reset-filters" type="button" disabled>Limpiar filtros</button>
+        <p id="result-count" role="status">Cargando oportunidades…</p>
+      </form>
+      <noscript><p class="notice">Activa JavaScript para consultar el radar y filtrar las oportunidades.</p></noscript>
+      <div id="results" aria-busy="true"></div>
+    </section>
+
+    <section id="fuentes" class="sources" aria-labelledby="sources-title" tabindex="-1">
+      <header>
+        <h2 id="sources-title">Fuentes del radar</h2>
+        <p>Consulta el resultado de la última revisión de cada fuente y la fecha en que pudo leerse correctamente.</p>
+      </header>
+      <p id="source-summary" class="source-summary">Consultando el estado de las fuentes…</p>
+      <ul id="source-list" class="source-list" aria-label="Estado por fuente"></ul>
+    </section>
+  </main>
+  <footer>
+    <div class="frame footer-inner">
+      <p>Radar de alta costura <span>Directorio gratuito</span></p>
+      <a href="#top" id="back-to-top">Volver arriba <span aria-hidden="true">↑</span></a>
+    </div>
+  </footer>
+  <template id="opportunity-template">
+    <li class="opportunity">
+      <article>
+        <div class="item-main">
+          <ul class="tags" aria-label="Tipo y modalidad">
+            <li class="item-type"></li>
+            <li class="item-modality"></li>
+            <li class="item-pending" hidden>Pendiente de verificar</li>
+          </ul>
+          <h4 class="item-title"></h4>
+          <p class="item-organization"></p>
+          <dl class="item-meta">
+            <div><dt>Ubicación</dt><dd class="item-location"></dd></div>
+            <div><dt>Cierre</dt><dd class="item-deadline"></dd></div>
+            <div class="item-pay-row" hidden><dt>Remuneración</dt><dd class="item-pay"></dd></div>
+          </dl>
+          <div class="item-links">
+            <a class="apply-link">Ver publicación <span aria-hidden="true">↗</span></a>
+            <span class="item-source"></span>
+          </div>
+        </div>
+        <details class="item-score">
+          <summary><span class="score-number"></span><span class="score-label">Afinidad <span>Ver motivos</span></span></summary>
+          <ul class="score-reasons"></ul>
+        </details>
+      </article>
+    </li>
+  </template>
+</body>
+</html>

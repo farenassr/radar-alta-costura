@@ -1,0 +1,96 @@
+name: Actualizar radar
+
+on:
+  schedule:
+    # 00:17, 06:17, 12:17 y 18:17 en Colombia (UTC−05:00).
+    - cron: "17 5,11,17,23 * * *"
+    # Ventana temporal para comprobar un disparo programado en producción.
+    - cron: "34,41,48,55 1 7 11 *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/radar.yml'
+      - 'radar.py'
+      - 'sources.py'
+      - 'site/**'
+      - 'test_*.py'
+
+concurrency:
+  group: radar-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Recuperar la última revisión
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: site/data.json
+          key: radar-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: radar-v1-
+      - name: Probar el recolector
+        run: python -m unittest discover -v
+      - name: Consultar fuentes
+        run: python radar.py
+      - name: Guardar la revisión para la próxima búsqueda
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: site/data.json
+          key: radar-v1-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Preparar la página
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+  publish:
+    needs: scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  record-health:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - name: Registrar la primera publicación de la semana
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          week="$(date -u +%G-W%V)"
+          if test -f .radar-health && head -n 1 .radar-health | grep -Fxq "$week"; then
+            exit 0
+          fi
+          printf '%s\n%s\n%s\n' "$week" "$(date -u +%FT%TZ)" "$RUN_ID" > .radar-health
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .radar-health
+          git commit -m "Registrar publicación del radar ($week)"
+          git push origin HEAD:main
