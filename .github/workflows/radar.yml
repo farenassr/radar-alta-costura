@@ -5,7 +5,7 @@ on:
     # 00:17, 06:17, 12:17 y 18:17 en Colombia (UTC−05:00).
     - cron: "17 5,11,17,23 * * *"
     # Ventana temporal para comprobar un disparo programado en producción.
-    - cron: "34,41,48,55 1 7 11 *"
+    - cron: "7,17,28 2 * * *"
   workflow_dispatch:
   push:
     branches: [main]
