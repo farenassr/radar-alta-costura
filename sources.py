@@ -18,6 +18,8 @@ INEXMODA_HOME = "https://inexmoda.org.co/"
 HIMALAYAS_HOME = "https://himalayas.app/"
 REFORMATION_HOME = "https://job-boards.greenhouse.io/reformation"
 REFORMATION_API = "https://api.greenhouse.io/v1/boards/reformation/jobs"
+MULBERRY_HOME = "https://jobs.lever.co/mulberry"
+MULBERRY_API = "https://api.lever.co/v0/postings/mulberry"
 
 
 def fetch_json(url, params=None):
@@ -387,7 +389,8 @@ REFORMATION_EXCLUSIONS = re.compile(
 )
 REFORMATION_SALARY = re.compile(
     r"\b(?:base salary|salary|pay|compensation)(?: range)?\s*(?:is|:)?\s*"
-    r"(\$[\d,]+(?:\.\d{2})?)(?:\s*(?:[-–—]|to)\s*(\$[\d,]+(?:\.\d{2})?))?",
+    r"(\$[\d,]+(?:\.\d{2})?)(/hr| per hour)?"
+    r"(?:\s*(?:[-–—]|to)\s*(\$[\d,]+(?:\.\d{2})?)(/hr| per hour)?)?",
     re.I,
 )
 
@@ -396,8 +399,9 @@ def _reformation_salary(description):
     match = REFORMATION_SALARY.search(description)
     if not match:
         return None
-    lower, upper = match.groups()
-    return f"{lower}–{upper}" if upper else lower
+    lower, lower_hourly, upper, upper_hourly = match.groups()
+    amount = f"{lower}–{upper}" if upper else lower
+    return f"{amount} por hora" if lower_hourly or upper_hourly else amount
 
 
 def reformation(now):
@@ -446,9 +450,48 @@ def reformation(now):
     return opportunities
 
 
+def mulberry(now):
+    opportunities = []
+    for job in _records(fetch_json(MULBERRY_API, {"mode": "json"})):
+        categories = job.get("categories") or {}
+        if categories.get("team") != "Ready-to-Wear":
+            continue
+        title = _plain(job.get("text"))
+        location = _plain(categories.get("location"))
+        application = _https(job.get("applyUrl"))
+        source_url = _https(job.get("hostedUrl"))
+        external_id = job.get("id")
+        modality = {"on-site": "presencial", "hybrid": "hibrido"}.get(job.get("workplaceType"))
+        if not all((title, location, application, source_url, external_id, modality)):
+            continue
+        created_ms = job.get("createdAt")
+        created = _unix_date(created_ms / 1000) if isinstance(created_ms, (int, float)) else None
+        description = " ".join(
+            _plain(job.get(field)) for field in ("description", "additional")
+        )
+        opportunities.append({
+            "id": f"mulberry:{external_id}",
+            "title": title,
+            "organization": "Mulberry",
+            "type": "empleo",
+            "modality": modality,
+            "location": location,
+            "section": "internacional",
+            "deadline": None,
+            "publishedAt": _iso(created),
+            "compensation": _plain(job.get("salaryDescriptionPlain")) or None,
+            "url": application,
+            "sourceUrl": source_url,
+            "description": f"{categories['team']} {description}",
+            "clearApplication": True,
+        })
+    return opportunities
+
+
 SOURCES = {
     "secop": ("SECOP II", SECOP_HOME, secop),
     "inexmoda": ("Inexmoda", INEXMODA_HOME, inexmoda),
     "himalayas": ("Himalayas", HIMALAYAS_HOME, himalayas),
     "reformation": ("Reformation", REFORMATION_HOME, reformation),
+    "mulberry": ("Mulberry", MULBERRY_HOME, mulberry),
 }

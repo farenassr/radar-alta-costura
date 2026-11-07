@@ -19,7 +19,9 @@ SPECIALTY = re.compile(
     r"couturiere?|tailleur|dressmak(?:er|ing)|premiere main|bordad\w*|broderie|embroidery|"
     r"confeccion\w*|garment construction|moda de autor|bridal(?:wear)?|vestidos? de novia|"
     r"robe de mariee|technical design(?:er)?|diseno tecnico|direction artistique|"
-    r"direccion creativa|creative director|taller(?:es)? de (?:moda|confeccion))\b"
+    r"direccion creativa|creative director|taller(?:es)? de (?:moda|confeccion)|"
+    r"fashion design(?:er)?|diseno de moda|designer de mode|textile design(?:er)?|"
+    r"diseno textil|(?:rtw|knitwear|apparel) designer|designer rtw|garment manufactur\w*)\b"
 )
 CRAFT = re.compile(
     r"\b(?:patron(?:ista|aje|niste|nage)|modeliste|pattern[ -]?mak(?:er|ing)|"
@@ -28,7 +30,7 @@ CRAFT = re.compile(
 )
 FASHION = re.compile(
     r"\b(?:moda|fashion|mode|apparel|garments?|prendas?|collections? de mode|"
-    r"textil(?:es|e)?|vestuar\w*|vestidos?|vetements?|pret.a.porter|bridal(?:wear)?)\b"
+    r"textil(?:es|e)?|vestuar\w*|vestidos?|vetements?|pret.a.porter|ready.to.wear|bridal(?:wear)?)\b"
 )
 ROLE = re.compile(
     r"\b(?:disen\w*|design\w*|consult\w*|asesor\w*|strateg\w*|estrateg\w*|produccion|"
@@ -100,9 +102,7 @@ def relevance(title, description):
     text = f"{title} {description}"
     if CRAFT.search(title) or (SPECIALTY.search(title) and FASHION.search(text)):
         return 42, "Especialidad de diseño, taller o confección vinculada con moda"
-    if (FASHION.search(title) and ROLE.search(text)) or (
-        ROLE.search(title) and FASHION.search(description) and SPECIALTY.search(description)
-    ):
+    if ROLE.search(title) and FASHION.search(text) and (SPECIALTY.search(description) or CRAFT.search(description)):
         return 30, "Actividad vinculada con diseño, producción o negocio de moda"
     return 0, ""
 

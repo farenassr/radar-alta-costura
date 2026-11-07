@@ -110,6 +110,24 @@ class SourcesTest(unittest.TestCase):
         self.assertIn("Develop garment patterns", result[0]["description"])
         self.assertEqual(result[0]["compensation"], "$100,000–$120,000")
 
+    def test_mulberry_includes_active_ready_to_wear_with_explicit_workplace(self):
+        job = {
+            "id": "job-one", "text": "Junior RTW Designer",
+            "categories": {"team": "Ready-to-Wear", "location": "London"},
+            "workplaceType": "hybrid", "createdAt": NOW.timestamp() * 1000,
+            "applyUrl": "https://jobs.lever.co/mulberry/job-one/apply",
+            "hostedUrl": "https://jobs.lever.co/mulberry/job-one",
+            "description": "<p>Develop seasonal garment collections</p>",
+        }
+        jobs = [job, dict(job, id="job-two", workplaceType="remote"),
+                dict(job, id="job-three", categories={"team": "Retail", "location": "London"})]
+        with patch.object(sources, "fetch_json", return_value=jobs):
+            result = sources.mulberry(NOW)
+        self.assertEqual([row["id"] for row in result], ["mulberry:job-one"])
+        self.assertEqual(result[0]["modality"], "hibrido")
+        self.assertEqual(result[0]["section"], "internacional")
+        self.assertEqual(result[0]["url"], job["applyUrl"])
+
 
 if __name__ == "__main__":
     unittest.main()

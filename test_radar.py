@@ -68,6 +68,12 @@ class RankingTest(unittest.TestCase):
         self.assertIsNotNone(rank(opportunity(title="Patronista"), NOW))
         self.assertIsNone(rank(opportunity(title="Technical Designer"), NOW))
 
+    def test_general_fashion_mention_needs_specialized_context(self):
+        general = opportunity(title="Paid Media Strategist, Fashion", description="E-commerce advertising")
+        specialized = opportunity(title="Fashion Marketing Director", description="Lead the launch of bridal collections")
+        self.assertIsNone(rank(general, NOW))
+        self.assertIsNotNone(rank(specialized, NOW))
+
 
 class CollectionTest(unittest.TestCase):
     def test_duplicates_across_sources_prefer_verified_higher_score(self):
