@@ -3,7 +3,7 @@ import json
 import logging
 import re
 import unicodedata
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -201,16 +201,20 @@ def collect(sources, previous, now):
                 state = "ok"
             status.append({
                 "id": key, "name": name, "url": url, "status": state,
-                "count": len(rows), "lastSuccessAt": checked if state == "ok" else prior_success,
+                "lastSuccessAt": checked if state == "ok" else prior_success,
             })
             opportunities.extend(rows)
 
+    ranked = deduplicate(opportunities)
+    counts = Counter(row["sourceId"] for row in ranked)
+    for item in status:
+        item["count"] = counts[item["id"]]
     return {
         "checkedAt": checked,
         "lastSuccessAt": checked if any(item["status"] == "ok" for item in status)
         else previous.get("lastSuccessAt"),
         "sources": status,
-        "opportunities": deduplicate(opportunities),
+        "opportunities": ranked,
     }
 
 

@@ -330,6 +330,14 @@ def _includes_colombia(countries):
     return False
 
 
+def _himalayas_type(employment_type, title):
+    if employment_type != "Contractor":
+        return "empleo"
+    if re.search(r"\b(?:consult\w*|advis[oe]r|asesor\w*)\b", _fold(title)):
+        return "consultoria"
+    return "proyecto"
+
+
 def himalayas(now):
     opportunities = {}
     for keyword in ("couture", "fashion", "patternmaking", "garment", "apparel"):
@@ -362,7 +370,7 @@ def himalayas(now):
                 "id": f"himalayas:{external_id}",
                 "title": title,
                 "organization": organization,
-                "type": "consultoria" if job.get("employmentType") == "Contractor" else "empleo",
+                "type": _himalayas_type(job.get("employmentType"), title),
                 "modality": "remoto",
                 "location": "Remoto · admite postulaciones desde Colombia",
                 "section": "colombia",

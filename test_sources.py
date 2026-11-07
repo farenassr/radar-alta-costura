@@ -73,7 +73,8 @@ class SourcesTest(unittest.TestCase):
         }
         jobs = [
             job,
-            dict(job, guid=guid + "-colombia", locationRestrictions=["United States", "Colombia"]),
+            dict(job, guid=guid + "-colombia", title="Patternmaking project", employmentType="Contractor",
+                 locationRestrictions=["United States", "Colombia"]),
             dict(job, guid=guid + "-west", timezoneRestrictions=["UTC-8"]),
             dict(job, guid=guid + "-us", locationRestrictions=["United States"]),
             dict(job, guid=guid + "-past", expiryDate=NOW.timestamp()),
@@ -86,6 +87,7 @@ class SourcesTest(unittest.TestCase):
         self.assertEqual(result[0]["section"], "colombia")
         self.assertEqual(result[0]["sourceUrl"], guid)
         self.assertEqual(result[0]["url"], guid + "?utm_source=api")
+        self.assertEqual(result[1]["type"], "proyecto")
 
     def test_reformation_filters_store_and_evergreen_posts(self):
         job = {

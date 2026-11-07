@@ -83,6 +83,7 @@ class CollectionTest(unittest.TestCase):
         }
         result = collect(sources, {}, NOW)
         self.assertEqual([row["id"] for row in result["opportunities"]], ["a:1"])
+        self.assertEqual([status["count"] for status in result["sources"]], [1, 0])
 
     def test_partial_failure_keeps_only_unexpired_recent_rows(self):
         previous = collect({"a": source(lambda _: [
